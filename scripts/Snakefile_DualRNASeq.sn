@@ -1,0 +1,294 @@
+import os
+import glob
+import sys
+
+inpath = "/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/SAMPLES/"
+outpath = "/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/"
+
+
+SAMPLES=[] 
+for name in glob.glob(inpath+"*_R1_001.fixed.gz"):
+    ID = os.path.basename(name).split("_R1_001")[0]
+    if ID not in SAMPLES:
+        SAMPLES.append(ID)
+
+print('samples are:', SAMPLES, file=sys.stderr)
+
+rule all:
+    input:
+        fastqc1 = expand(outpath+"FASTQC/{sample}_R1_001.fixed_fastqc.html", sample=SAMPLES),
+        fastqc2 = expand(outpath+"FASTQC/{sample}_R2_001.fixed_fastqc.html", sample=SAMPLES),
+        trimmed1 = expand(outpath+"TRIMMED/{sample}_R1_001_trim.fixed.gz", sample=SAMPLES),
+        trimmed2 = expand(outpath+"TRIMMED/{sample}_R2_001_trim.fixed.gz", sample=SAMPLES),
+        se1 = expand(outpath+"TRIMMED/{sample}_R1_001_se.fixed.gz", sample=SAMPLES),
+        se2 = expand(outpath+"TRIMMED/{sample}_R2_001_se.fixed.gz", sample=SAMPLES),
+        host1 = expand(outpath+"host_reads/{sample}_host_reads_1.fixed.gz", sample=SAMPLES),
+        host2 = expand(outpath+"host_reads/{sample}_host_reads_2.fixed.gz", sample=SAMPLES),
+        nonhost1 = expand(outpath+"nonhost_reads/{sample}_non_host_reads_1.fixed.gz", sample=SAMPLES),
+        nonhost2 = expand(outpath+"nonhost_reads/{sample}_non_host_reads_2.fixed.gz", sample=SAMPLES),
+        output = expand(outpath+"classified/{sample}.output.tsv", sample=SAMPLES),
+        report = expand(outpath+"classified/{sample}.report.tsv", sample=SAMPLES),
+        biom = outpath+"biom/Kraken_Noc_RNA.biom",
+        phytree = outpath+"biom/Kraken_Noc_RNA.phytree",
+        phylum = expand(outpath+"Bracken/Phylum/{sample}_bracken_phylum.tsv", sample=SAMPLES),
+        p_report = expand(outpath+"Bracken/Phylum/{sample}_bracken_p-report.tsv", sample=SAMPLES),
+        pcomb = outpath+"Bracken/Phylum/combined_phylum.Bracken.txt",
+        genus = expand(outpath+"Bracken/Genus/{sample}_bracken_genus.tsv", sample=SAMPLES),
+        g_report = expand(outpath+"Bracken/Genus/{sample}_bracken_g-report.tsv", sample=SAMPLES),
+        gcomb = outpath+"Bracken/Genus/combined_genus.Bracken.txt",
+        species = expand(outpath+"Bracken/Species/{sample}_bracken_species.tsv", sample=SAMPLES),
+        s_report = expand(outpath+"Bracken/Species/{sample}_bracken_s-report.tsv", sample=SAMPLES),
+        scomb = outpath+"Bracken/Species/combined_species.Bracken.txt",
+        domain = expand(outpath+"Bracken/Domain/{sample}_bracken_domain.tsv", sample=SAMPLES),
+        d_report = expand(outpath+"Bracken/Domain/{sample}_bracken_d-report.tsv", sample=SAMPLES),
+        dcomb = outpath+"Bracken/Domain/combined_domain.Bracken.txt",
+        sign = expand(outpath+"signatures/{sample}-reads.sig", sample=SAMPLES),
+        matrix = outpath+"compare/Noc_comp",
+        plot = outpath+"compare/Noc_comp.matrix.pdf",
+        gather = expand(outpath+"gather/{sample}_gather.csv", sample=SAMPLES),
+        tax = expand(outpath+"tax_annotated/{sample}_gather.with-lineages.csv", sample=SAMPLES)
+
+
+
+rule make_fastqc:
+    input:
+        read1 = inpath+"{sample}_R1_001.fixed.gz",
+        read2 = inpath+"{sample}_R2_001.fixed.gz"
+    output:
+        fastqc1 = outpath+"FASTQC/{sample}_R1_001.fixed_fastqc.html",
+        fastqc2 = outpath+"FASTQC/{sample}_R2_001.fixed_fastqc.html"
+    shell:
+        "fastqc {input}"
+
+rule trimmomatic:
+    input:
+        read1 = inpath+"{sample}_R1_001.fixed.gz",
+        read2 = inpath+"{sample}_R2_001.fixed.gz"
+    output:
+        trimmed1 =  outpath+"TRIMMED/{sample}_R1_001_trim.fixed.gz",
+        trimmed2 =  outpath+"TRIMMED/{sample}_R2_001_trim.fixed.gz",
+        se1 = outpath+"TRIMMED/{sample}_R1_001_se.fixed.gz",
+        se2 = outpath+"TRIMMED/{sample}_R2_001_se.fixed.gz"
+    params:
+        adaptor = "/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/all_illumina_trimmomatic_2022Aug01.fa"
+    conda:
+        "trimmomatic.yaml"
+    shell:"""
+        trimmomatic PE -quiet {input.read1} {input.read2} {output.trimmed1} {output.se1} {output.trimmed2} {output.se2}\
+        ILLUMINACLIP:{params.adaptor}:2:40:15 LEADING:2 TRAILING:2 SLIDINGWINDOW:4:15 MINLEN:50
+        """
+
+rule kraken_sort:
+    input:
+         trimmed1 = outpath+"TRIMMED/{sample}_R1_001_trim.fixed.gz",
+         trimmed2 = outpath+"TRIMMED/{sample}_R2_001_trim.fixed.gz"
+    output:
+         host1 = outpath+"host_reads/{sample}_host_reads_1.fixed.gz",
+         host2 = outpath+"host_reads/{sample}_host_reads_2.fixed.gz",
+         nonhost1 = outpath+"nonhost_reads/{sample}_non_host_reads_1.fixed.gz",
+         nonhost2 = outpath+"nonhost_reads/{sample}_non_host_reads_2.fixed.gz"
+    params:
+         db = "/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/kraken2-2.1.2/Cow_and_PhiX_db",
+         host = outpath+"host_reads/{sample}_host_reads#.fixed",
+         nonhost = outpath+"nonhost_reads/{sample}_non_host_reads#.fixed",
+         host1 = outpath+"host_reads/{sample}_host_reads_1.fixed",
+         host2 = outpath+"host_reads/{sample}_host_reads_2.fixed",
+         nonhost1 = outpath+"nonhost_reads/{sample}_non_host_reads_1.fixed",
+         nonhost2 = outpath+"nonhost_reads/{sample}_non_host_reads_2.fixed"
+    shell:"""
+         kraken2 --threads 16 --db {params.db} --gzip-compressed --classified-out {params.host} --unclassified-out {params.nonhost} --paired {input.trimmed1} {input.trimmed2}
+         pigz -f {params.host1} > {output.host1}
+         pigz -f {params.host2} > {output.host2}
+         pigz -f {params.nonhost1} > {output.nonhost1}
+         pigz -f {params.nonhost2} > {output.nonhost2}
+         """
+
+rule kraken_classify:
+    input:
+         nonhost1 = outpath+"nonhost_reads/{sample}_non_host_reads_1.fixed.gz",
+         nonhost2 = outpath+"nonhost_reads/{sample}_non_host_reads_2.fixed.gz"
+    output:
+         output = outpath+"classified/{sample}.output.tsv",
+         report = outpath+"classified/{sample}.report.tsv"
+    params:
+         db = "/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/kraken2-2.1.2/Rumen_Microbiome_db"
+    shell:"""
+         kraken2 --threads 16 --db {params.db} --report-zero-counts --gzip-compressed --output {output.output} --report {output.report} --use-names --paired {input.nonhost1} {input.nonhost2}
+         """
+
+rule kraken_biom:
+    input:
+         report = expand(outpath+"classified/{sample}.report.tsv", sample = SAMPLES)
+    output:
+         biom = outpath+"biom/Kraken_Noc_RNA.biom",
+         phytree = outpath+"biom/Kraken_Noc_RNA.phytree"
+    conda:
+         "bracken.yaml"
+    shell:"""
+         kraken-biom --fmt json -o {output.biom} --otu_fp {output.phytree} {input.report}
+         """
+
+rule Bracken_phylum:
+    input:
+         report = outpath+"classified/{sample}.report.tsv"
+    output:
+         phylum = outpath+"Bracken/Phylum/{sample}_bracken_phylum.tsv",
+         p_report = outpath+"Bracken/Phylum/{sample}_bracken_p-report.tsv"
+    params:
+         db = "/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/kraken2-2.1.2/Rumen_Microbiome_db"
+    conda:
+         "bracken.yaml"
+    shell:"""
+         bracken -d {params.db} -i {input.report} -o {output.phylum} -w {output.p_report} -r 150 -l P -t 5
+         """
+
+rule combine_phylum:
+    input:
+         phylum = expand(outpath+"Bracken/Phylum/{sample}_bracken_phylum.tsv", sample = SAMPLES)
+    output:
+         pcomb = outpath+"Bracken/Phylum/combined_phylum.Bracken.txt"
+    conda:
+         "bracken.yaml"
+    shell:"""
+         combine_bracken_outputs.py --files {input.phylum} --output {output.pcomb}
+         """
+
+rule Bracken_genus:
+    input:
+         report = outpath+"classified/{sample}.report.tsv"
+    output:
+         genus = outpath+"Bracken/Genus/{sample}_bracken_genus.tsv",
+         g_report = outpath+"Bracken/Genus/{sample}_bracken_g-report.tsv"
+    params:
+         db = "/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/kraken2-2.1.2/Rumen_Microbiome_db"
+    conda:
+         "bracken.yaml"
+    shell:"""
+         bracken -d {params.db} -i {input.report} -o {output.genus} -w {output.g_report} -r 150 -l G -t 5
+         """
+
+rule combine_genus:
+    input:
+         genus = expand(outpath+"Bracken/Genus/{sample}_bracken_genus.tsv", sample = SAMPLES)
+    output:
+         gcomb = outpath+"Bracken/Genus/combined_genus.Bracken.txt"
+    conda:
+         "bracken.yaml"
+    shell:"""
+         combine_bracken_outputs.py --files {input.genus} --output {output.gcomb}
+         """
+
+rule Bracken_species:
+    input:
+         report = outpath+"classified/{sample}.report.tsv"
+    output:
+         species = outpath+"Bracken/Species/{sample}_bracken_species.tsv",
+         s_report = outpath+"Bracken/Species/{sample}_bracken_s-report.tsv"
+    params:
+         db = "/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/kraken2-2.1.2/Rumen_Microbiome_db"
+    conda:
+         "bracken.yaml"
+    shell:"""
+         bracken -d {params.db} -i {input.report} -o {output.species} -w {output.s_report} -r 150 -l S -t 5
+         """
+
+rule combine_species:
+    input:
+         species = expand(outpath+"Bracken/Species/{sample}_bracken_species.tsv", sample = SAMPLES)
+    output:
+         scomb = outpath+"Bracken/Species/combined_species.Bracken.txt"
+    conda:
+         "bracken.yaml"
+    shell:"""
+         combine_bracken_outputs.py --files {input.species} --output {output.scomb}
+         """
+
+rule Bracken_domain:
+    input:
+         report = outpath+"classified/{sample}.report.tsv"
+    output:
+         domain = outpath+"Bracken/Domain/{sample}_bracken_domain.tsv",
+         d_report = outpath+"Bracken/Domain/{sample}_bracken_d-report.tsv"
+    params:
+         db = "/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/kraken2-2.1.2/Rumen_Microbiome_db"
+    conda:
+         "bracken.yaml"
+    shell:"""
+         bracken -d {params.db} -i {input.report} -o {output.domain} -w {output.d_report} -r 150 -l D -t 5
+         """
+
+rule combine_domain:
+    input:
+         domain = expand(outpath+"Bracken/Domain/{sample}_bracken_domain.tsv", sample = SAMPLES)
+    output:
+         dcomb = outpath+"Bracken/Domain/combined_domain.Bracken.txt"
+    conda:
+         "bracken.yaml"
+    shell:"""
+         combine_bracken_outputs.py --files {input.domain} --output {output.dcomb}
+         """
+
+rule sketch_signatures:
+    input:
+         read1 = outpath+"nonhost_reads/{sample}_non_host_reads_1.fixed.gz",
+         read2 = outpath+"nonhost_reads/{sample}_non_host_reads_2.fixed.gz"
+    output:
+          sign = outpath+"signatures/{sample}-reads.sig"
+    params:
+          merge = "{sample}"
+    conda:
+         "sourmash.yaml"
+    shell:"""
+         sourmash sketch dna -p k=21,k=31,k=51,scaled=1000,abund --merge {params.merge} -o {output.sign} {input.read1} {input.read2}
+         """
+
+rule sourmash_compare:
+    input:
+         sign = expand(outpath+"signatures/{sample}-reads.sig", sample = SAMPLES)
+    output:
+         matrix = outpath+"compare/Noc_comp"
+    params:
+         csv = outpath+"compare/Noc_comp.csv"
+    conda:
+         "sourmash.yaml"
+    shell:"""
+         sourmash compare {input.sign} --output {output.matrix} -k 31 --csv {params.csv}
+         """
+
+rule plot:
+    input:
+         matrix = outpath+"compare/Noc_comp"
+    output:
+         plot = outpath+"compare/Noc_comp.matrix.pdf"
+    conda:
+         "sourmash.yaml"
+    shell:"""
+         sourmash plot --labels --pdf {input.matrix}
+         """
+
+rule sourmash_gather:
+    input: 
+         sign = outpath+"signatures/{sample}-reads.sig"
+    output:
+         gather = outpath+"gather/{sample}_gather.csv"
+    params:
+         db = expand("/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/Sourmash_database/genbank-2022.03/genbank-2022.03-{db}-{k}.zip", db = ["archaea", "bacteria", "protozoa", "fungi", "viral"], k = ["k21", "k31","k51"])
+    conda:
+         "sourmash.yaml"
+    shell:"""
+         sourmash gather {input.sign} {params.db} --output {output.gather} --threshold-bp 1 --ksize 31 --no-fail-on-empty-database
+         """
+
+rule sourmash_tax:
+    input:
+         gather = outpath+"gather/{sample}_gather.csv"
+    output:
+         tax = outpath+"tax_annotated/{sample}_gather.with-lineages.csv"
+    params:
+         db = expand("/home/hfm/Rumen_Microbiome_Genomics/1_Sequences_Guanhui/Sourmash_database/genbank-2022.03/genbank-2022.03-{db}.lineages.csv.gz", db = ["archaea", "bacteria", "protozoa", "fungi", "viral"]),
+         dir = directory(outpath+"tax_annotated/")
+    conda:
+         "sourmash.yaml"
+    shell:"""
+         sourmash tax annotate -g {input.gather} -t {params.db} -o {params.dir}
+         """
