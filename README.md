@@ -4,6 +4,7 @@ In construction...
 # Bioinformatic analyses:
 - Phenotype characterization
 - 16S rRNA sequencing
+- 18S rRNA sequencing
 - Dual-RNA sequencing
 - Untargeted primary metabolite analysis
 - Rumen nitrogen metabolism analysis
