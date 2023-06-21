@@ -12,8 +12,8 @@ In construction...
 
 ## More info can be found by directly addressing the first and corresponding authors
 
-- Dr. Hugo Monteiro: hmonteiro@ucdavis.edu
-- Dr. Fabio Lima: falima@ucdavis.edu
+- Hugo Monteiro: hmonteiro@ucdavis.edu
+- Fabio Lima: falima@ucdavis.edu
 
 ## Publication details
 
