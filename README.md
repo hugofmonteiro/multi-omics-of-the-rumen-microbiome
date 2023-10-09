@@ -15,7 +15,7 @@ In construction...
 - Fabio Lima: falima@ucdavis.edu
 
 ## Conding contributions:
-- Matched van Heule: mvanheule@ucdavis.edu
+- Machteld van Heule: mvanheule@ucdavis.edu
 - C. Titus Brown: ctbrown@ucdavis.edu
 - Bart Weimer: bcweimer@ucdavis.edu
 - Francisco Peñagaricano: fpenagarican@wisc.edu
