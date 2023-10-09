@@ -16,7 +16,7 @@ In construction...
 
 ## Conding contributions:
 - Matched van Heule: mvanheule@ucdavis.edu
-- C. Titus Brown: ctbrown@UCDAVIS.EDU
+- C. Titus Brown: ctbrown@ucdavis.edu
 - Bart Weimer: bcweimer@ucdavis.edu
 - Francisco Peñagaricano: fpenagarican@wisc.edu
 - Andre L. A. Neves: andre.neves@sund.ku.dk
