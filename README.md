@@ -11,11 +11,18 @@ In construction...
 - Serum metabolite analsysis
 
 ## More info can be found by directly addressing the first and corresponding authors
-
 - Hugo Monteiro: hmonteiro@ucdavis.edu
 - Fabio Lima: falima@ucdavis.edu
 
+## Conding contributions:
+- Matched van Heule: mvanheule@ucdavis.edu
+- C. Titus Brown: ctbrown@UCDAVIS.EDU
+- Bart Weimer: bcweimer@ucdavis.edu
+- Francisco Peñagaricano: fpenagarican@wisc.edu
+- Andre L. A. Neves: andre.neves@sund.ku.dk
+- LeLuo Guan: lguan@ualberta.ca
+
 ## Publication details
 
-- To be submited to Nature Communications: Monteiro et al. A multi-omics approach to characterize the rumen microbiome mechanism on improving the milk production efficiency of dairy cows.
+- To be submitted to Nature Communications: Monteiro et al. A multi-omics approach to characterize the rumen microbiome mechanism on improving the milk production efficiency of dairy cows.
 - August, 2023.
