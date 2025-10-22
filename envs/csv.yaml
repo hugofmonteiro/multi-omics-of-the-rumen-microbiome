@@ -1,0 +1,8 @@
+name: csv
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - csvtk=0.23.0=h9ee0642_0
+prefix: /home/hfm/miniconda3/envs/csv

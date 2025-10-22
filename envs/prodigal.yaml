@@ -1,0 +1,13 @@
+name: prodigal
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=conda_forge
+  - _openmp_mutex=4.5=2_gnu
+  - libgcc=14.1.0=h77fa898_1
+  - libgcc-ng=14.1.0=h69a702a_1
+  - libgomp=14.1.0=h77fa898_1
+  - prodigal=2.6.3=h031d066_9
+prefix: /home/hfm/mambaforge/envs/prodigal
