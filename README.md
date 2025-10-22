@@ -9,8 +9,10 @@
 - Untargeted primary metabolite analysis
 - Rumen nitrogen metabolism analysis
 - Serum hormonal analsysis
+- [Virome analysis](https://github.com/AnneliektH/2024-cow-rumen/tree/main)
 
 ## More info can be found by directly addressing the first and corresponding authors
 - Hugo Monteiro: hmonteiro@ucdavis.edu
 - Fabio Lima: falima@ucdavis.edu
+
 
