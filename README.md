@@ -7,7 +7,7 @@
 - Dual-RNA sequencing
 - Shotgun DNA sequencing
 - Untargeted primary metabolite analysis
-- Rumen nitrogen metabolism analysis
+- Targeted short-chain fatty acid and nitrogen analysis
 - Serum hormonal analsysis
 - [Virome analysis](https://github.com/AnneliektH/2024-cow-rumen/tree/main)
 
